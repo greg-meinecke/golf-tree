@@ -60,6 +60,18 @@
     "hometown": "Round Rock, TX"
   },
   {
+    "id": "pete_dawson",
+    "name": "Pete Dawson",
+    "nickname": "Pistol Pete",
+    "sponsor": "mike_sullivan",
+    "lord": false,
+    "years_attended": [2019, 2020, 2021, 2023, 2024, 2025],
+    "wins": 2,
+    "funny_story": "Tried to skip a ball across the water hazard on a dare. It worked. He still lost the hole.",
+    "photo": "images/members/pete_dawson.jpg",
+    "hometown": "Dripping Springs, TX"
+  },
+  {
     "id": "brad_kowalski",
     "name": "Brad Kowalski",
     "nickname": "Ski",
@@ -70,6 +82,30 @@
     "funny_story": "Showed up to the 2023 trip with brand new clubs still in the plastic wrap.",
     "photo": "images/members/brad_kowalski.jpg",
     "hometown": "Plano, TX"
+  },
+  {
+    "id": "nick_ortega",
+    "name": "Nick Ortega",
+    "nickname": "Nicky O",
+    "sponsor": "dave_chen",
+    "lord": false,
+    "years_attended": [2020, 2021, 2022, 2023, 2024, 2025],
+    "wins": 1,
+    "funny_story": "Brings homemade salsa to every trip. Nobody golfs well the morning after Nick's habanero batch.",
+    "photo": "images/members/nick_ortega.jpg",
+    "hometown": "Irving, TX"
+  },
+  {
+    "id": "alan_briggs",
+    "name": "Alan Briggs",
+    "nickname": "Briggsy",
+    "sponsor": "dave_chen",
+    "lord": false,
+    "years_attended": [2019, 2021, 2022, 2024, 2025],
+    "wins": 0,
+    "funny_story": "Keeps a detailed spreadsheet of every shot he's ever taken on the trip. It's 47 tabs.",
+    "photo": "images/members/alan_briggs.jpg",
+    "hometown": "McKinney, TX"
   },
   {
     "id": "marcus_hall",
@@ -84,6 +120,30 @@
     "hometown": "Fort Worth, TX"
   },
   {
+    "id": "will_tanner",
+    "name": "Will Tanner",
+    "nickname": "Tan Man",
+    "sponsor": "rob_jenkins",
+    "lord": false,
+    "years_attended": [2019, 2020, 2021, 2022, 2023, 2024, 2025],
+    "wins": 3,
+    "funny_story": "Applied so much sunscreen he left white handprints on every club he touched.",
+    "photo": "images/members/will_tanner.jpg",
+    "hometown": "New Braunfels, TX"
+  },
+  {
+    "id": "greg_nash",
+    "name": "Greg Nash",
+    "nickname": "Nashy",
+    "sponsor": "rob_jenkins",
+    "lord": false,
+    "years_attended": [2020, 2022, 2023, 2025],
+    "wins": 0,
+    "funny_story": "Fell asleep in the cart on hole 12. His partner played the rest of the round solo.",
+    "photo": "images/members/greg_nash.jpg",
+    "hometown": "Boerne, TX"
+  },
+  {
     "id": "kyle_thompson",
     "name": "Kyle Thompson",
     "nickname": "KT",
@@ -96,16 +156,16 @@
     "hometown": "Georgetown, TX"
   },
   {
-    "id": "derek_foster",
-    "name": "Derek Foster",
-    "nickname": "D-Fos",
-    "sponsor": "brad_kowalski",
+    "id": "ryan_mcbride",
+    "name": "Ryan McBride",
+    "nickname": "Mac",
+    "sponsor": "jason_park",
     "lord": false,
-    "years_attended": [2023, 2024, 2025],
+    "years_attended": [2021, 2022, 2023, 2024, 2025],
     "wins": 1,
-    "funny_story": "Won the putting contest despite holding the putter backwards. Claims it's his technique.",
-    "photo": "images/members/derek_foster.jpg",
-    "hometown": "Frisco, TX"
+    "funny_story": "Wore the same 'lucky' polo every single day of the 2023 trip. Nobody sat near him by day three.",
+    "photo": "images/members/ryan_mcbride.jpg",
+    "hometown": "Katy, TX"
   },
   {
     "id": "sam_rivera",
@@ -120,6 +180,30 @@
     "hometown": "Cedar Park, TX"
   },
   {
+    "id": "derek_foster",
+    "name": "Derek Foster",
+    "nickname": "D-Fos",
+    "sponsor": "brad_kowalski",
+    "lord": false,
+    "years_attended": [2023, 2024, 2025],
+    "wins": 1,
+    "funny_story": "Won the putting contest despite holding the putter backwards. Claims it's his technique.",
+    "photo": "images/members/derek_foster.jpg",
+    "hometown": "Frisco, TX"
+  },
+  {
+    "id": "leo_grant",
+    "name": "Leo Grant",
+    "nickname": "The Professor",
+    "sponsor": "brad_kowalski",
+    "lord": false,
+    "years_attended": [2024, 2025],
+    "wins": 0,
+    "funny_story": "Gave a 10-minute lecture on swing mechanics on the first tee. Shot 112.",
+    "photo": "images/members/leo_grant.jpg",
+    "hometown": "Allen, TX"
+  },
+  {
     "id": "chris_wells",
     "name": "Chris Wells",
     "nickname": "Wellsy",
@@ -130,5 +214,161 @@
     "funny_story": "Insisted on playing in cowboy boots. Shot 120 but looked great doing it.",
     "photo": "images/members/chris_wells.jpg",
     "hometown": "Waco, TX"
+  },
+  {
+    "id": "omar_hassan",
+    "name": "Omar Hassan",
+    "nickname": "O.H.",
+    "sponsor": "marcus_hall",
+    "lord": false,
+    "years_attended": [2023, 2024, 2025],
+    "wins": 1,
+    "funny_story": "Aced a par 3 on his very first trip. The group has resented him ever since.",
+    "photo": "images/members/omar_hassan.jpg",
+    "hometown": "Arlington, TX"
+  },
+  {
+    "id": "travis_dunn",
+    "name": "Travis Dunn",
+    "nickname": "Dunner",
+    "sponsor": "will_tanner",
+    "lord": false,
+    "years_attended": [2022, 2023, 2024, 2025],
+    "wins": 0,
+    "funny_story": "Brought his own custom flag for whenever he made par. Used it twice all weekend.",
+    "photo": "images/members/travis_dunn.jpg",
+    "hometown": "Seguin, TX"
+  },
+  {
+    "id": "jared_miles",
+    "name": "Jared Miles",
+    "nickname": "J-Miles",
+    "sponsor": "will_tanner",
+    "lord": false,
+    "years_attended": [2023, 2024, 2025],
+    "wins": 0,
+    "funny_story": "Challenged everyone to a chipping contest in the hotel parking lot at 11pm. Security was called.",
+    "photo": "images/members/jared_miles.jpg",
+    "hometown": "Kyle, TX"
+  },
+  {
+    "id": "connor_walsh",
+    "name": "Connor Walsh",
+    "nickname": "Walshy",
+    "sponsor": "kyle_thompson",
+    "lord": false,
+    "years_attended": [2024, 2025],
+    "wins": 0,
+    "funny_story": "Showed up with a set of clubs from 1987 that he found at a garage sale. The bag had no strap.",
+    "photo": "images/members/connor_walsh.jpg",
+    "hometown": "Pflugerville, TX"
+  },
+  {
+    "id": "matt_ingram",
+    "name": "Matt Ingram",
+    "nickname": "Matty Ice",
+    "sponsor": "ryan_mcbride",
+    "lord": false,
+    "years_attended": [2024, 2025],
+    "wins": 1,
+    "funny_story": "Calmest guy on the course. Sank a 40-foot putt to win and just said 'neat.'",
+    "photo": "images/members/matt_ingram.jpg",
+    "hometown": "Sugar Land, TX"
+  },
+  {
+    "id": "zach_perry",
+    "name": "Zach Perry",
+    "nickname": "Z-Man",
+    "sponsor": "pete_dawson",
+    "lord": false,
+    "years_attended": [2022, 2023, 2024, 2025],
+    "wins": 1,
+    "funny_story": "Claims he once hit a 350-yard drive. Nobody else saw it. There were no witnesses. The ball was never found.",
+    "photo": "images/members/zach_perry.jpg",
+    "hometown": "Lakeway, TX"
+  },
+  {
+    "id": "eli_morgan",
+    "name": "Eli Morgan",
+    "nickname": "E-Mo",
+    "sponsor": "pete_dawson",
+    "lord": false,
+    "years_attended": [2023, 2024, 2025],
+    "wins": 0,
+    "funny_story": "Packed six different pairs of golf shoes for a three-day trip. Wore sandals the whole time.",
+    "photo": "images/members/eli_morgan.jpg",
+    "hometown": "Bee Cave, TX"
+  },
+  {
+    "id": "drew_campbell",
+    "name": "Drew Campbell",
+    "nickname": "Soupy",
+    "sponsor": "nick_ortega",
+    "lord": false,
+    "years_attended": [2023, 2024, 2025],
+    "wins": 0,
+    "funny_story": "Tried to use a rangefinder on a 90-yard shot. It locked onto a deer instead.",
+    "photo": "images/members/drew_campbell.jpg",
+    "hometown": "Coppell, TX"
+  },
+  {
+    "id": "ben_larson",
+    "name": "Ben Larson",
+    "nickname": "Benny L",
+    "sponsor": "nick_ortega",
+    "lord": false,
+    "years_attended": [2024, 2025],
+    "wins": 0,
+    "funny_story": "Ate Nick's habanero salsa before the morning round. Did not finish the morning round.",
+    "photo": "images/members/ben_larson.jpg",
+    "hometown": "Grapevine, TX"
+  },
+  {
+    "id": "victor_duarte",
+    "name": "Victor Duarte",
+    "nickname": "V",
+    "sponsor": "derek_foster",
+    "lord": false,
+    "years_attended": [2025],
+    "wins": 0,
+    "funny_story": "Rookie year. Showed up with only a 7-iron and a putter. 'I'll figure it out,' he said. He did not.",
+    "photo": "images/members/victor_duarte.jpg",
+    "hometown": "Prosper, TX"
+  },
+  {
+    "id": "ian_cole",
+    "name": "Ian Cole",
+    "nickname": "Ice Cole",
+    "sponsor": "omar_hassan",
+    "lord": false,
+    "years_attended": [2025],
+    "wins": 0,
+    "funny_story": "First-timer. Hit his opening tee shot backwards. The group gave him a standing ovation.",
+    "photo": "images/members/ian_cole.jpg",
+    "hometown": "Mansfield, TX"
+  },
+  {
+    "id": "nate_bishop",
+    "name": "Nate Bishop",
+    "nickname": "Bish",
+    "sponsor": "travis_dunn",
+    "lord": false,
+    "years_attended": [2025],
+    "wins": 0,
+    "funny_story": "Brought a GoPro to film his swing. The only footage was him tripping getting out of the cart.",
+    "photo": "images/members/nate_bishop.jpg",
+    "hometown": "San Marcos, TX"
+  },
+  {
+    "id": "paul_richter",
+    "name": "Paul Richter",
+    "nickname": "Richie Rich",
+    "sponsor": "zach_perry",
+    "lord": false,
+    "years_attended": [2025],
+    "wins": 0,
+    "funny_story": "Bought a round of drinks for everyone after making his first par. It was hole 16.",
+    "photo": "images/members/paul_richter.jpg",
+    "hometown": "Westlake, TX"
   }
 ]
