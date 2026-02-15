@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CAC Tree — Golf Trip Hall of Fame</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+</head>
+<body>
+  <div id="header">
+    <div style="display:flex;align-items:baseline;">
+      <h1>CAC Tree</h1>
+      <span class="subtitle">Golf Trip Hall of Fame</span>
+    </div>
+    <div id="search-box">
+      <input type="text" id="search-input" placeholder="Search members...">
+    </div>
+  </div>
+
+  <div id="main">
+    <div id="tree-container">
+      <div id="zoom-controls">
+        <button id="zoom-in" title="Zoom in">+</button>
+        <button id="zoom-out" title="Zoom out">&minus;</button>
+        <button id="zoom-fit" title="Fit to view">&#8859;</button>
+      </div>
+    </div>
+
+    <div id="detail-panel">
+      <button id="detail-close">&times;</button>
+      <div id="detail-photo-wrap">
+        <div class="detail-placeholder">?</div>
+      </div>
+      <div id="detail-lord-badge"><span>&#9819; Founding Lord</span></div>
+      <div id="detail-name"></div>
+      <div id="detail-nickname"></div>
+      <div id="detail-hometown"></div>
+
+      <div class="detail-stats">
+        <div class="detail-stat">
+          <div class="detail-stat-value" id="stat-years">0</div>
+          <div class="detail-stat-label">Years</div>
+        </div>
+        <div class="detail-stat">
+          <div class="detail-stat-value" id="stat-wins">0</div>
+          <div class="detail-stat-label">Wins</div>
+        </div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Years Attended</h3>
+        <div class="detail-years-list" id="detail-years"></div>
+      </div>
+
+      <div class="detail-section">
+        <h3>Sponsored By</h3>
+        <p id="detail-sponsor"></p>
+      </div>
+
+      <div class="detail-section">
+        <h3>The Story</h3>
+        <p id="detail-story"></p>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/detail.js"></script>
+  <script src="js/tree.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      DetailPanel.init();
+      TreeViz.init();
+
+      // Search
+      const searchInput = document.getElementById('search-input');
+      let debounce;
+      searchInput.addEventListener('input', () => {
+        clearTimeout(debounce);
+        debounce = setTimeout(() => TreeViz.search(searchInput.value), 200);
+      });
+
+      // Close panel on Escape
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+          DetailPanel.close();
+          searchInput.value = '';
+          TreeViz.search('');
+        }
+      });
+    });
+  </script>
+</body>
+</html>

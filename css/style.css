@@ -1,0 +1,419 @@
+/* ============================================
+   CAC Tree — Golf Trip Hall of Fame
+   ============================================ */
+
+:root {
+  --bg-primary: #1a1f2e;
+  --bg-secondary: #232940;
+  --bg-card: #2a3150;
+  --green-dark: #2d5a27;
+  --green-mid: #4a8c3f;
+  --green-light: #6db85a;
+  --gold: #d4a843;
+  --gold-light: #f0d078;
+  --text-primary: #e8e8e8;
+  --text-secondary: #a0a8c0;
+  --text-muted: #6a7290;
+  --link-color: #88b4e0;
+  --node-bg: #2a3150;
+  --node-border: #3d4670;
+  --lord-border: #d4a843;
+  --lord-glow: rgba(212, 168, 67, 0.3);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  overflow: hidden;
+  height: 100vh;
+}
+
+/* ---------- Header ---------- */
+#header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 24px;
+  background: var(--bg-secondary);
+  border-bottom: 2px solid var(--green-dark);
+  z-index: 10;
+  position: relative;
+}
+
+#header h1 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: 1px;
+}
+
+#header .subtitle {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin-left: 16px;
+}
+
+#search-box {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#search-box input {
+  background: var(--bg-primary);
+  border: 1px solid var(--node-border);
+  color: var(--text-primary);
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  width: 200px;
+  outline: none;
+}
+
+#search-box input::placeholder {
+  color: var(--text-muted);
+}
+
+#search-box input:focus {
+  border-color: var(--green-mid);
+}
+
+/* ---------- Main layout ---------- */
+#main {
+  display: flex;
+  height: calc(100vh - 52px);
+}
+
+#tree-container {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+
+#tree-container svg {
+  width: 100%;
+  height: 100%;
+}
+
+/* ---------- D3 Tree Nodes ---------- */
+.node-group {
+  cursor: pointer;
+}
+
+.node-rect {
+  fill: var(--node-bg);
+  stroke: var(--node-border);
+  stroke-width: 2px;
+  rx: 8;
+  ry: 8;
+  transition: stroke 0.2s, filter 0.2s;
+}
+
+.node-group:hover .node-rect {
+  stroke: var(--green-light);
+  filter: drop-shadow(0 0 6px rgba(109, 184, 90, 0.3));
+}
+
+.node-group.lord .node-rect {
+  stroke: var(--lord-border);
+  stroke-width: 3px;
+  filter: drop-shadow(0 0 8px var(--lord-glow));
+}
+
+.node-group.lord:hover .node-rect {
+  stroke: var(--gold-light);
+  filter: drop-shadow(0 0 12px var(--lord-glow));
+}
+
+.node-name {
+  fill: var(--text-primary);
+  font-size: 13px;
+  font-weight: 600;
+  text-anchor: middle;
+}
+
+.node-nickname {
+  fill: var(--text-secondary);
+  font-size: 10px;
+  text-anchor: middle;
+  font-style: italic;
+}
+
+.node-years {
+  fill: var(--text-muted);
+  font-size: 10px;
+  text-anchor: middle;
+}
+
+.node-photo {
+  clip-path: circle(18px at 18px 18px);
+}
+
+.lord-crown {
+  fill: var(--gold);
+  font-size: 14px;
+  text-anchor: middle;
+}
+
+.node-toggle {
+  fill: var(--bg-secondary);
+  stroke: var(--node-border);
+  stroke-width: 1.5px;
+  cursor: pointer;
+}
+
+.node-toggle-text {
+  fill: var(--text-secondary);
+  font-size: 12px;
+  text-anchor: middle;
+  dominant-baseline: central;
+  pointer-events: none;
+}
+
+/* ---------- Links ---------- */
+.tree-link {
+  fill: none;
+  stroke: var(--node-border);
+  stroke-width: 2px;
+  stroke-opacity: 0.6;
+}
+
+.tree-link.lord-link {
+  stroke: var(--lord-border);
+  stroke-opacity: 0.4;
+}
+
+/* ---------- Detail Panel ---------- */
+#detail-panel {
+  width: 340px;
+  background: var(--bg-secondary);
+  border-left: 2px solid var(--node-border);
+  padding: 24px;
+  overflow-y: auto;
+  transform: translateX(100%);
+  transition: transform 0.3s ease;
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  z-index: 20;
+}
+
+#detail-panel.open {
+  transform: translateX(0);
+}
+
+#detail-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.4rem;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+#detail-close:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+#detail-photo-wrap {
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 16px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid var(--node-border);
+  background: var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#detail-photo-wrap.lord {
+  border-color: var(--lord-border);
+  box-shadow: 0 0 16px var(--lord-glow);
+}
+
+#detail-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.detail-placeholder {
+  font-size: 3rem;
+  color: var(--text-muted);
+}
+
+#detail-name {
+  text-align: center;
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 2px;
+}
+
+#detail-nickname {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: 4px;
+  font-size: 0.95rem;
+}
+
+#detail-hometown {
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+#detail-lord-badge {
+  text-align: center;
+  margin-bottom: 12px;
+  display: none;
+}
+
+#detail-lord-badge span {
+  background: linear-gradient(135deg, var(--gold), var(--gold-light));
+  color: var(--bg-primary);
+  padding: 3px 12px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.detail-stats {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.detail-stat {
+  background: var(--bg-card);
+  border-radius: 8px;
+  padding: 12px;
+  text-align: center;
+}
+
+.detail-stat-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--green-light);
+}
+
+.detail-stat-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.detail-section {
+  margin-bottom: 16px;
+}
+
+.detail-section h3 {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 6px;
+}
+
+.detail-section p {
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.detail-years-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.detail-year-tag {
+  background: var(--bg-card);
+  color: var(--text-secondary);
+  padding: 3px 10px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+}
+
+/* ---------- Search highlight ---------- */
+.node-group.search-match .node-rect {
+  stroke: var(--green-light);
+  stroke-width: 3px;
+  filter: drop-shadow(0 0 10px rgba(109, 184, 90, 0.5));
+}
+
+.node-group.search-dimmed {
+  opacity: 0.25;
+}
+
+/* ---------- Zoom controls ---------- */
+#zoom-controls {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 5;
+}
+
+#zoom-controls button {
+  width: 36px;
+  height: 36px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--node-border);
+  color: var(--text-primary);
+  font-size: 1.1rem;
+  cursor: pointer;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#zoom-controls button:hover {
+  background: var(--bg-card);
+  border-color: var(--green-mid);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 768px) {
+  #header {
+    flex-direction: column;
+    gap: 8px;
+    padding: 10px 16px;
+  }
+
+  #header .subtitle {
+    margin-left: 0;
+  }
+
+  #search-box input {
+    width: 100%;
+  }
+
+  #detail-panel {
+    width: 100%;
+  }
+}
