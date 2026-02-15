@@ -124,12 +124,12 @@ body {
 .node-group.lord .node-rect {
   stroke: var(--lord-border);
   stroke-width: 3px;
-  filter: drop-shadow(0 0 8px var(--lord-glow));
+  filter: drop-shadow(0 0 12px var(--lord-glow)) drop-shadow(0 0 24px rgba(212, 168, 67, 0.15));
 }
 
 .node-group.lord:hover .node-rect {
   stroke: var(--gold-light);
-  filter: drop-shadow(0 0 12px var(--lord-glow));
+  filter: drop-shadow(0 0 16px var(--lord-glow)) drop-shadow(0 0 32px rgba(212, 168, 67, 0.25));
 }
 
 .node-name {
