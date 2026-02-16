@@ -2,7 +2,9 @@
 
 const TreeViz = (() => {
   let svg, g, treemap, root, allMembers;
-  const nodeW = 160, nodeH = 72;
+  // Compact regular nodes: just a name pill
+  const nodeW = 140, nodeH = 32;
+  // Lords stay large
   const lordW = 200, lordH = 96;
   const margin = { top: 40, right: 40, bottom: 40, left: 40 };
   let zoom;
@@ -11,14 +13,12 @@ const TreeViz = (() => {
     const resp = await fetch('data/members.json');
     allMembers = await resp.json();
 
-    // Build a lookup for sponsor names
     const byId = {};
     allMembers.forEach(m => byId[m.id] = m);
     allMembers.forEach(m => {
       m._sponsorName = m.sponsor ? (byId[m.sponsor]?.name || m.sponsor) : null;
     });
 
-    // Add a virtual root so d3.stratify works with multiple lords
     const dataWithRoot = [
       { id: '__root__', sponsor: null, name: 'CAC', lord: false, _virtual: true }
     ].concat(
@@ -34,7 +34,6 @@ const TreeViz = (() => {
 
     root = stratify(dataWithRoot);
 
-    // Initial state: all expanded
     root.descendants().forEach(d => {
       d._children = null;
     });
@@ -62,7 +61,6 @@ const TreeViz = (() => {
 
     svg.call(zoom);
 
-    // SVG defs for lord gradient
     const defs = svg.append('defs');
     const lordGrad = defs.append('linearGradient')
       .attr('id', 'lord-gradient')
@@ -75,7 +73,6 @@ const TreeViz = (() => {
     g = svg.append('g')
       .attr('transform', `translate(${margin.left}, ${height / 2})`);
 
-    // Zoom control buttons
     d3.select('#zoom-in').on('click', () => svg.transition().duration(300).call(zoom.scaleBy, 1.3));
     d3.select('#zoom-out').on('click', () => svg.transition().duration(300).call(zoom.scaleBy, 0.7));
     d3.select('#zoom-fit').on('click', centerTree);
@@ -87,15 +84,26 @@ const TreeViz = (() => {
     const height = container.clientHeight;
     svg.transition().duration(500).call(
       zoom.transform,
-      d3.zoomIdentity.translate(margin.left + 100, height / 2).scale(0.55)
+      d3.zoomIdentity.translate(margin.left + 120, height / 2).scale(0.65)
     );
   }
+
+  function getW(d) { return d.data.lord ? lordW : nodeW; }
+  function getH(d) { return d.data.lord ? lordH : nodeH; }
 
   function update(source) {
     const duration = 400;
 
-    // Horizontal tree: nodeSize is [vertical spacing, horizontal spacing]
-    treemap = d3.tree().nodeSize([lordH + 20, lordW + 80]);
+    // Use separation function to give lords more vertical space
+    treemap = d3.tree()
+      .nodeSize([nodeH + 12, lordW + 60])
+      .separation((a, b) => {
+        const aH = a.data.lord ? lordH : nodeH;
+        const bH = b.data.lord ? lordH : nodeH;
+        const needed = (aH + bH) / 2 + 12;
+        const base = nodeH + 12;
+        return needed / base;
+      });
     const treeData = treemap(root);
 
     const nodes = treeData.descendants().filter(d => !d.data._virtual);
@@ -130,7 +138,6 @@ const TreeViz = (() => {
       .remove();
 
     // ---- NODES ----
-    // In horizontal layout: d.y = horizontal position, d.x = vertical position
     const node = g.selectAll('.node-group')
       .data(nodes, d => d.data.id);
 
@@ -144,32 +151,29 @@ const TreeViz = (() => {
         DetailPanel.show(d.data);
       });
 
-    // Card background
-    nodeEnter.append('rect')
-      .attr('class', 'node-rect')
-      .attr('x', d => d.data.lord ? -lordW / 2 : -nodeW / 2)
-      .attr('y', d => d.data.lord ? -lordH / 2 : -nodeH / 2)
-      .attr('width', d => d.data.lord ? lordW : nodeW)
-      .attr('height', d => d.data.lord ? lordH : nodeH)
-      .attr('fill', d => d.data.lord ? 'url(#lord-gradient)' : 'var(--node-bg)');
+    // === LORD NODES (full card) ===
+    const lords = nodeEnter.filter(d => d.data.lord);
 
-    // Crown for lords
-    nodeEnter.filter(d => d.data.lord)
-      .append('text')
+    lords.append('rect')
+      .attr('class', 'node-rect')
+      .attr('x', -lordW / 2)
+      .attr('y', -lordH / 2)
+      .attr('width', lordW)
+      .attr('height', lordH)
+      .attr('fill', 'url(#lord-gradient)');
+
+    lords.append('text')
       .attr('class', 'lord-crown')
       .attr('y', -lordH / 2 - 6)
       .attr('font-size', '18px')
       .text('\u265B');
 
-    // "LORD" badge for lords
-    nodeEnter.filter(d => d.data.lord).each(function() {
+    lords.each(function() {
       const badge = d3.select(this).append('g')
         .attr('transform', `translate(0, ${-lordH / 2 + 14})`);
       badge.append('rect')
-        .attr('x', -48)
-        .attr('y', -8)
-        .attr('width', 96)
-        .attr('height', 14)
+        .attr('x', -48).attr('y', -8)
+        .attr('width', 96).attr('height', 14)
         .attr('rx', 7)
         .attr('fill', 'var(--gold)')
         .attr('opacity', 0.9);
@@ -183,54 +187,110 @@ const TreeViz = (() => {
         .text('LORD');
     });
 
-    // Photo placeholder circle
-    nodeEnter.append('circle')
-      .attr('cx', d => d.data.lord ? -lordW / 2 + 32 : -nodeW / 2 + 28)
-      .attr('cy', d => d.data.lord ? 6 : 0)
-      .attr('r', d => d.data.lord ? 22 : 18)
+    lords.append('circle')
+      .attr('cx', -lordW / 2 + 32)
+      .attr('cy', 6)
+      .attr('r', 22)
       .attr('fill', 'var(--bg-primary)')
-      .attr('stroke', d => d.data.lord ? 'var(--lord-border)' : 'var(--node-border)')
-      .attr('stroke-width', d => d.data.lord ? 2 : 1.5);
+      .attr('stroke', 'var(--lord-border)')
+      .attr('stroke-width', 2);
 
-    // Initial letter
-    nodeEnter.append('text')
-      .attr('x', d => d.data.lord ? -lordW / 2 + 32 : -nodeW / 2 + 28)
-      .attr('y', d => d.data.lord ? 7 : 1)
+    lords.append('text')
+      .attr('x', -lordW / 2 + 32)
+      .attr('y', 7)
       .attr('text-anchor', 'middle')
       .attr('dominant-baseline', 'central')
-      .attr('fill', d => d.data.lord ? 'var(--gold)' : 'var(--text-muted)')
-      .attr('font-size', d => d.data.lord ? '16px' : '14px')
+      .attr('fill', 'var(--gold)')
+      .attr('font-size', '16px')
       .attr('font-weight', '600')
-      .attr('class', 'node-initial')
       .text(d => d.data.name.charAt(0));
 
-    // Name
-    nodeEnter.append('text')
+    lords.append('text')
       .attr('class', 'node-name')
-      .attr('x', d => d.data.lord ? 16 : 12)
-      .attr('y', d => d.data.lord ? -2 : -8)
-      .attr('font-size', d => d.data.lord ? '15px' : '13px')
+      .attr('x', 16).attr('y', -2)
+      .attr('text-anchor', 'middle')
+      .attr('font-size', '15px')
       .text(d => d.data.name);
 
-    // Nickname
-    nodeEnter.append('text')
+    lords.append('text')
       .attr('class', 'node-nickname')
-      .attr('x', d => d.data.lord ? 16 : 12)
-      .attr('y', d => d.data.lord ? 14 : 7)
+      .attr('x', 16).attr('y', 14)
+      .attr('text-anchor', 'middle')
       .text(d => d.data.nickname ? `"${d.data.nickname}"` : '');
 
-    // Years count
-    nodeEnter.append('text')
+    lords.append('text')
       .attr('class', 'node-years')
-      .attr('x', d => d.data.lord ? 16 : 12)
-      .attr('y', d => d.data.lord ? 29 : 22)
-      .text(d => `${d.data.years_attended.length} yrs | ${d.data.wins} wins`);
+      .attr('x', 16).attr('y', 29)
+      .attr('text-anchor', 'middle')
+      .text(d => {
+        const stars = d.data.wins > 0 ? ' ' + '\u2605'.repeat(Math.min(d.data.wins, 5)) : '';
+        return `${d.data.years_attended.length} yrs${stars}`;
+      })
+      .attr('fill', d => d.data.wins > 0 ? 'var(--gold)' : 'var(--text-muted)');
 
-    // Expand/collapse toggle (on the right side for horizontal layout)
+    // === REGULAR NODES (compact pill) ===
+    const regulars = nodeEnter.filter(d => !d.data.lord);
+
+    regulars.append('rect')
+      .attr('class', 'node-rect')
+      .attr('x', -nodeW / 2)
+      .attr('y', -nodeH / 2)
+      .attr('width', nodeW)
+      .attr('height', nodeH)
+      .attr('rx', 16)
+      .attr('ry', 16);
+
+    // Name (left-aligned, clipped to available space)
+    regulars.each(function(d) {
+      const txt = d3.select(this).append('text')
+        .attr('class', 'node-name')
+        .attr('x', -nodeW / 2 + 12)
+        .attr('y', 1)
+        .attr('text-anchor', 'start')
+        .attr('dominant-baseline', 'central')
+        .attr('font-size', '11px')
+        .text(d.data.name);
+
+      // Clip with SVG clipPath isn't worth it — just truncate long names
+      const maxChars = d.data.wins > 0 ? 12 : 14;
+      if (d.data.name.length > maxChars) {
+        txt.text(d.data.name.substring(0, maxChars - 1) + '\u2026');
+      }
+    });
+
+    // Small win trophy indicators (right side of pill)
+    regulars.each(function(d) {
+      const wins = d.data.wins;
+      const years = d.data.years_attended.length;
+
+      // Years dot
+      d3.select(this).append('text')
+        .attr('x', nodeW / 2 - 12)
+        .attr('y', 1)
+        .attr('text-anchor', 'end')
+        .attr('dominant-baseline', 'central')
+        .attr('fill', 'var(--text-muted)')
+        .attr('font-size', '9px')
+        .text(`${years}y`);
+
+      // Win stars
+      if (wins > 0) {
+        d3.select(this).append('text')
+          .attr('x', nodeW / 2 - 32)
+          .attr('y', 1)
+          .attr('text-anchor', 'end')
+          .attr('dominant-baseline', 'central')
+          .attr('fill', 'var(--gold)')
+          .attr('font-size', '9px')
+          .text('\u2605'.repeat(Math.min(wins, 5)));
+      }
+    });
+
+    // === TOGGLE BUTTONS (both types) ===
     nodeEnter.filter(d => d.data.id !== '__root__')
       .each(function(d) {
         if (d.children || d._children) {
-          const w = d.data.lord ? lordW : nodeW;
+          const w = getW(d);
           const toggle = d3.select(this).append('g')
             .attr('class', 'toggle-btn')
             .attr('transform', `translate(${w / 2}, 0)`)
@@ -241,15 +301,16 @@ const TreeViz = (() => {
 
           toggle.append('circle')
             .attr('class', 'node-toggle')
-            .attr('r', 10);
+            .attr('r', 8);
 
           toggle.append('text')
             .attr('class', 'node-toggle-text')
+            .attr('font-size', '10px')
             .text(d => d._children ? '+' : '\u2212');
         }
       });
 
-    // Update — swap x/y for horizontal
+    // Update positions
     const nodeUpdate = nodeEnter.merge(node);
     nodeUpdate.transition().duration(duration)
       .attr('transform', d => `translate(${d.y},${d.x})`)
@@ -258,13 +319,11 @@ const TreeViz = (() => {
     nodeUpdate.select('.node-toggle-text')
       .text(d => d._children ? '+' : (d.children ? '\u2212' : ''));
 
-    // Exit
     node.exit().transition().duration(duration)
       .attr('transform', `translate(${source.y},${source.x})`)
       .style('opacity', 0)
       .remove();
 
-    // Stash positions for transitions
     nodes.forEach(d => {
       d.x0 = d.x;
       d.y0 = d.y;
@@ -282,13 +341,12 @@ const TreeViz = (() => {
     update(d);
   }
 
-  // Horizontal diagonal: curves left-to-right
   function diagonal(s, t) {
     const sW = s.data && s.data.lord ? lordW : nodeW;
     const tW = t.data && t.data.lord ? lordW : nodeW;
-    const sx = s.y + sW / 2;  // right edge of source
+    const sx = s.y + sW / 2;
     const sy = s.x;
-    const tx = t.y - tW / 2;  // left edge of target
+    const tx = t.y - tW / 2;
     const ty = t.x;
     const midX = (sx + tx) / 2;
     return `M ${sx} ${sy}
@@ -297,7 +355,6 @@ const TreeViz = (() => {
               ${tx} ${ty}`;
   }
 
-  // Search functionality
   function search(query) {
     const q = query.toLowerCase().trim();
     const nodes = g.selectAll('.node-group');

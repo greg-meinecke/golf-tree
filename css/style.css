@@ -60,6 +60,17 @@ body {
   margin-left: 16px;
 }
 
+#legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.legend-item {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
 #search-box {
   display: flex;
   align-items: center;
@@ -134,22 +145,17 @@ body {
 
 .node-name {
   fill: var(--text-primary);
-  font-size: 13px;
   font-weight: 600;
-  text-anchor: middle;
 }
 
 .node-nickname {
   fill: var(--text-secondary);
   font-size: 10px;
-  text-anchor: middle;
   font-style: italic;
 }
 
 .node-years {
-  fill: var(--text-muted);
   font-size: 10px;
-  text-anchor: middle;
 }
 
 .node-photo {
