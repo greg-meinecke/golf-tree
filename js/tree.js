@@ -518,6 +518,60 @@ const TreeViz = (() => {
     });
   }
 
+  // Simple fuzzy scoring: how well does query match target?
+  // Returns 0 (no match) to 1 (perfect match)
+  function fuzzyScore(query, target) {
+    const q = query.toLowerCase();
+    const t = target.toLowerCase();
+
+    // Exact substring match — strong signal
+    if (t.includes(q)) return 0.9 + (q.length / t.length) * 0.1;
+
+    // Character-by-character fuzzy: all query chars must appear in order
+    let qi = 0;
+    let score = 0;
+    let consecutive = 0;
+    let lastMatch = -2;
+
+    for (let ti = 0; ti < t.length && qi < q.length; ti++) {
+      if (t[ti] === q[qi]) {
+        // Bonus for consecutive matches
+        consecutive = (ti === lastMatch + 1) ? consecutive + 1 : 1;
+        score += 1 + consecutive * 0.5;
+        // Bonus for matching at start of word
+        if (ti === 0 || t[ti - 1] === ' ') score += 2;
+        lastMatch = ti;
+        qi++;
+      }
+    }
+
+    // All query chars must be found
+    if (qi < q.length) return 0;
+
+    return score / (t.length + q.length);
+  }
+
+  function fuzzyMatch(query) {
+    if (!query || !allMembers) return [];
+    const q = query.trim();
+    if (q.length === 0) return [];
+
+    const scored = allMembers.map(m => {
+      const nameScore = fuzzyScore(q, m.name);
+      const nickScore = m.nickname ? fuzzyScore(q, m.nickname) : 0;
+      const townScore = m.hometown ? fuzzyScore(q, m.hometown) * 0.5 : 0;
+      return { ...m, _score: Math.max(nameScore, nickScore, townScore) };
+    });
+
+    return scored
+      .filter(m => m._score > 0.15)
+      .sort((a, b) => b._score - a._score);
+  }
+
+  function getMember(id) {
+    return allMembers ? allMembers.find(m => m.id === id) : null;
+  }
+
   function expandAll() {
     root.descendants().forEach(d => {
       if (d._children) {
@@ -528,5 +582,5 @@ const TreeViz = (() => {
     update(root);
   }
 
-  return { init, search, filterByYear, expandAll, centerTree };
+  return { init, search, fuzzyMatch, getMember, filterByYear, expandAll, centerTree };
 })();

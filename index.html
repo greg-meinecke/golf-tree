@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>CAC Tree — Golf Trip Hall of Fame</title>
   <link rel="stylesheet" href="css/style.css">
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -14,6 +14,7 @@
       <span class="subtitle">Golf Trip Hall of Fame</span>
     </div>
     <div id="header-controls">
+      <button id="filter-toggle" aria-label="Toggle filters">&#9776;</button>
       <div id="legend">
         <span class="legend-item"><span style="color:#d4a843;">&#9733;</span> = win</span>
         <span class="legend-item"><span style="color:#6a7290;">'19 (6y)</span> = started, total years</span>
@@ -25,7 +26,10 @@
         <select id="year-filter">
           <option value="">All Years</option>
         </select>
-        <input type="text" id="search-input" placeholder="Search members...">
+        <div id="search-wrap">
+          <input type="text" id="search-input" placeholder="Search members..." autocomplete="off">
+          <ul id="search-suggestions"></ul>
+        </div>
       </div>
     </div>
   </div>
@@ -39,7 +43,9 @@
       </div>
     </div>
 
+    <div id="detail-backdrop"></div>
     <div id="detail-panel">
+      <div id="detail-drag-handle"><span></span></div>
       <button id="detail-close">&times;</button>
       <div id="detail-photo-wrap">
         <div class="detail-placeholder">?</div>
@@ -84,13 +90,68 @@
       DetailPanel.init();
       TreeViz.init();
 
-      // Search
+      // Fuzzy search with suggestions
       const searchInput = document.getElementById('search-input');
+      const suggestions = document.getElementById('search-suggestions');
       let debounce;
+
       searchInput.addEventListener('input', () => {
         clearTimeout(debounce);
-        debounce = setTimeout(() => TreeViz.search(searchInput.value), 200);
+        debounce = setTimeout(() => {
+          const q = searchInput.value.trim();
+          TreeViz.search(q);
+          if (q.length >= 1) {
+            const matches = TreeViz.fuzzyMatch(q);
+            showSuggestions(matches);
+          } else {
+            suggestions.innerHTML = '';
+            suggestions.style.display = 'none';
+          }
+        }, 150);
       });
+
+      searchInput.addEventListener('focus', () => {
+        const q = searchInput.value.trim();
+        if (q.length >= 1) {
+          const matches = TreeViz.fuzzyMatch(q);
+          showSuggestions(matches);
+        }
+      });
+
+      searchInput.addEventListener('blur', () => {
+        // Delay so click on suggestion registers
+        setTimeout(() => {
+          suggestions.style.display = 'none';
+        }, 200);
+      });
+
+      function showSuggestions(matches) {
+        if (matches.length === 0) {
+          suggestions.innerHTML = '';
+          suggestions.style.display = 'none';
+          return;
+        }
+        suggestions.innerHTML = matches.slice(0, 6).map(m =>
+          `<li data-id="${m.id}">
+            <span class="sugg-name">${m.name}</span>
+            ${m.nickname ? `<span class="sugg-nick">"${m.nickname}"</span>` : ''}
+          </li>`
+        ).join('');
+        suggestions.style.display = 'block';
+
+        suggestions.querySelectorAll('li').forEach(li => {
+          li.addEventListener('mousedown', () => {
+            const id = li.dataset.id;
+            const member = TreeViz.getMember(id);
+            if (member) {
+              searchInput.value = member.name;
+              suggestions.style.display = 'none';
+              TreeViz.search(member.name);
+              DetailPanel.show(member);
+            }
+          });
+        });
+      }
 
       // Year filter
       const yearFilter = document.getElementById('year-filter');
@@ -109,6 +170,34 @@
           TreeViz.filterByYear(null);
         }
       });
+
+      // Backdrop closes detail panel
+      document.getElementById('detail-backdrop').addEventListener('click', () => {
+        DetailPanel.close();
+      });
+
+      // Drag handle closes detail panel
+      document.getElementById('detail-drag-handle').addEventListener('click', () => {
+        DetailPanel.close();
+      });
+
+      // Mobile: toggle filters
+      const filterToggle = document.getElementById('filter-toggle');
+      const filters = document.getElementById('filters');
+      filterToggle.addEventListener('click', () => {
+        filters.classList.toggle('filters-open');
+      });
+
+      // Swipe down to close detail panel on mobile
+      let touchStartY = 0;
+      const panel = document.getElementById('detail-panel');
+      panel.addEventListener('touchstart', (e) => {
+        touchStartY = e.touches[0].clientY;
+      }, { passive: true });
+      panel.addEventListener('touchend', (e) => {
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (dy > 80) DetailPanel.close();
+      }, { passive: true });
     });
   </script>
 </body>

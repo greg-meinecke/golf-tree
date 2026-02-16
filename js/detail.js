@@ -1,10 +1,11 @@
 // detail.js — Member detail panel logic
 
 const DetailPanel = (() => {
-  let panel, currentMemberId = null;
+  let panel, backdrop, currentMemberId = null;
 
   function init() {
     panel = document.getElementById('detail-panel');
+    backdrop = document.getElementById('detail-backdrop');
     document.getElementById('detail-close').addEventListener('click', close);
   }
 
@@ -62,10 +63,12 @@ const DetailPanel = (() => {
     }
 
     panel.classList.add('open');
+    if (backdrop) backdrop.classList.add('open');
   }
 
   function close() {
     if (panel) panel.classList.remove('open');
+    if (backdrop) backdrop.classList.remove('open');
     currentMemberId = null;
   }
 
