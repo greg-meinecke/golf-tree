@@ -92,15 +92,51 @@ const TreeViz = (() => {
     d3.select('#zoom-fit').on('click', centerTree);
   }
 
-  function centerTree() {
+  function fitToView(animate) {
     const container = document.getElementById('tree-container');
     const width = container.clientWidth;
     const height = container.clientHeight;
-    svg.transition().duration(500).call(
-      zoom.transform,
-      d3.zoomIdentity.translate(margin.left + 120, height / 2).scale(0.65)
-    );
+
+    // Get bounds of all visible nodes
+    const visibleNodes = root.descendants().filter(d => !d.data._virtual);
+    if (visibleNodes.length === 0) return;
+
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    visibleNodes.forEach(d => {
+      const w = d.data.lord ? lordW : nodeW;
+      const h = d.data.lord ? lordH : nodeH;
+      // In horizontal layout: d.y = horizontal, d.x = vertical
+      minX = Math.min(minX, d.y - w / 2);
+      maxX = Math.max(maxX, d.y + w / 2 + 20); // extra for toggle
+      minY = Math.min(minY, d.x - h / 2);
+      maxY = Math.max(maxY, d.x + h / 2);
+    });
+
+    const treeW = maxX - minX;
+    const treeH = maxY - minY;
+    const pad = 60;
+
+    const scaleX = (width - pad * 2) / treeW;
+    const scaleY = (height - pad * 2) / treeH;
+    const scale = Math.min(scaleX, scaleY, 1.2); // cap at 1.2 so it doesn't get huge
+
+    const centerX = (minX + maxX) / 2;
+    const centerY = (minY + maxY) / 2;
+    const tx = width / 2 - centerX * scale;
+    const ty = height / 2 - centerY * scale;
+
+    const transform = d3.zoomIdentity.translate(tx, ty).scale(scale);
+    const duration = animate !== false ? 500 : 0;
+
+    if (duration > 0) {
+      svg.transition().duration(duration).call(zoom.transform, transform);
+    } else {
+      svg.call(zoom.transform, transform);
+    }
   }
+
+  // Alias for backward compat
+  function centerTree() { fitToView(true); }
 
   function isHof(d) { return d.data.years_attended && d.data.years_attended.length >= 5; }
   function getW(d) { return d.data.lord ? lordW : (isHof(d) ? nodeW : smallW); }
@@ -408,6 +444,9 @@ const TreeViz = (() => {
       d.x0 = d.x;
       d.y0 = d.y;
     });
+
+    // Auto-fit after transitions settle
+    setTimeout(() => fitToView(true), duration + 50);
   }
 
   function toggleNode(d) {
