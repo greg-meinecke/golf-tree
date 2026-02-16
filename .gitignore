@@ -1,0 +1,12 @@
+# Real member data (copy members.example.json to members.json and edit)
+data/members.json
+
+# Member photos
+images/members/*.jpg
+images/members/*.png
+
+# OS files
+.DS_Store
+
+# Editor
+.vscode/
