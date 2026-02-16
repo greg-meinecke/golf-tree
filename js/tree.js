@@ -162,11 +162,38 @@ const TreeViz = (() => {
       .attr('height', lordH)
       .attr('fill', 'url(#lord-gradient)');
 
-    lords.append('text')
-      .attr('class', 'lord-crown')
-      .attr('y', -lordH / 2 - 6)
-      .attr('font-size', '18px')
-      .text('\u265B');
+    // Fez hat hanging on top-right corner
+    lords.each(function() {
+      const fez = d3.select(this).append('g')
+        .attr('transform', `translate(${lordW / 2 - 8}, ${-lordH / 2 - 6})`);
+
+      // Fez body (trapezoid)
+      fez.append('path')
+        .attr('d', 'M -10,0 L -7,-16 L 7,-16 L 10,0 Z')
+        .attr('fill', '#c0392b')
+        .attr('stroke', '#922b21')
+        .attr('stroke-width', 1);
+
+      // Flat top
+      fez.append('rect')
+        .attr('x', -8).attr('y', -17)
+        .attr('width', 16).attr('height', 2)
+        .attr('rx', 1)
+        .attr('fill', '#922b21');
+
+      // Tassel string
+      fez.append('path')
+        .attr('d', 'M 0,-16 Q 12,-14 14,-6')
+        .attr('fill', 'none')
+        .attr('stroke', '#d4a843')
+        .attr('stroke-width', 1.5);
+
+      // Tassel end
+      fez.append('circle')
+        .attr('cx', 14).attr('cy', -5)
+        .attr('r', 2.5)
+        .attr('fill', '#d4a843');
+    });
 
     lords.each(function() {
       const badge = d3.select(this).append('g')
