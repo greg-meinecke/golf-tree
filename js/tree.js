@@ -1,10 +1,10 @@
-// tree.js — D3.js tree rendering + interactions
+// tree.js — D3.js tree rendering + interactions (horizontal layout)
 
 const TreeViz = (() => {
   let svg, g, treemap, root, allMembers;
   const nodeW = 160, nodeH = 72;
   const lordW = 200, lordH = 96;
-  const margin = { top: 60, right: 40, bottom: 60, left: 40 };
+  const margin = { top: 40, right: 40, bottom: 40, left: 40 };
   let zoom;
 
   async function init() {
@@ -55,7 +55,7 @@ const TreeViz = (() => {
       .attr('height', height);
 
     zoom = d3.zoom()
-      .scaleExtent([0.2, 3])
+      .scaleExtent([0.15, 3])
       .on('zoom', (event) => {
         g.attr('transform', event.transform);
       });
@@ -73,7 +73,7 @@ const TreeViz = (() => {
     lordGrad.append('stop').attr('offset', '100%').attr('stop-color', '#3a3018');
 
     g = svg.append('g')
-      .attr('transform', `translate(${width / 2}, ${margin.top})`);
+      .attr('transform', `translate(${margin.left}, ${height / 2})`);
 
     // Zoom control buttons
     d3.select('#zoom-in').on('click', () => svg.transition().duration(300).call(zoom.scaleBy, 1.3));
@@ -87,20 +87,19 @@ const TreeViz = (() => {
     const height = container.clientHeight;
     svg.transition().duration(500).call(
       zoom.transform,
-      d3.zoomIdentity.translate(width / 2, margin.top).scale(0.85)
+      d3.zoomIdentity.translate(margin.left + 100, height / 2).scale(0.55)
     );
   }
 
   function update(source) {
     const duration = 400;
 
-    // Compute tree layout
-    treemap = d3.tree().nodeSize([lordW + 20, lordH + 60]);
+    // Horizontal tree: nodeSize is [vertical spacing, horizontal spacing]
+    treemap = d3.tree().nodeSize([lordH + 20, lordW + 80]);
     const treeData = treemap(root);
 
     const nodes = treeData.descendants().filter(d => !d.data._virtual);
     const links = treeData.links().filter(d => !d.source.data._virtual && !d.target.data._virtual);
-    // Links from virtual root to lords
     const lordLinks = treeData.links().filter(d => d.source.data._virtual);
 
     // ---- LINKS ----
@@ -131,13 +130,14 @@ const TreeViz = (() => {
       .remove();
 
     // ---- NODES ----
+    // In horizontal layout: d.y = horizontal position, d.x = vertical position
     const node = g.selectAll('.node-group')
       .data(nodes, d => d.data.id);
 
     const nodeEnter = node.enter()
       .append('g')
       .attr('class', d => 'node-group' + (d.data.lord ? ' lord' : ''))
-      .attr('transform', `translate(${source.x0 || 0},${source.y0 || 0})`)
+      .attr('transform', `translate(${source.y0 || 0},${source.x0 || 0})`)
       .style('opacity', 0)
       .on('click', (event, d) => {
         event.stopPropagation();
@@ -226,14 +226,14 @@ const TreeViz = (() => {
       .attr('y', d => d.data.lord ? 29 : 22)
       .text(d => `${d.data.years_attended.length} yrs | ${d.data.wins} wins`);
 
-    // Expand/collapse toggle
+    // Expand/collapse toggle (on the right side for horizontal layout)
     nodeEnter.filter(d => d.data.id !== '__root__')
       .each(function(d) {
         if (d.children || d._children) {
-          const h = d.data.lord ? lordH : nodeH;
+          const w = d.data.lord ? lordW : nodeW;
           const toggle = d3.select(this).append('g')
             .attr('class', 'toggle-btn')
-            .attr('transform', `translate(0, ${h / 2})`)
+            .attr('transform', `translate(${w / 2}, 0)`)
             .on('click', (event, d) => {
               event.stopPropagation();
               toggleNode(d);
@@ -249,10 +249,10 @@ const TreeViz = (() => {
         }
       });
 
-    // Update
+    // Update — swap x/y for horizontal
     const nodeUpdate = nodeEnter.merge(node);
     nodeUpdate.transition().duration(duration)
-      .attr('transform', d => `translate(${d.x},${d.y})`)
+      .attr('transform', d => `translate(${d.y},${d.x})`)
       .style('opacity', 1);
 
     nodeUpdate.select('.node-toggle-text')
@@ -260,7 +260,7 @@ const TreeViz = (() => {
 
     // Exit
     node.exit().transition().duration(duration)
-      .attr('transform', `translate(${source.x},${source.y})`)
+      .attr('transform', `translate(${source.y},${source.x})`)
       .style('opacity', 0)
       .remove();
 
@@ -282,13 +282,19 @@ const TreeViz = (() => {
     update(d);
   }
 
+  // Horizontal diagonal: curves left-to-right
   function diagonal(s, t) {
-    const sH = s.data && s.data.lord ? lordH : nodeH;
-    const tH = t.data && t.data.lord ? lordH : nodeH;
-    return `M ${s.x} ${s.y + sH / 2}
-            C ${s.x} ${(s.y + sH / 2 + t.y - tH / 2) / 2},
-              ${t.x} ${(s.y + sH / 2 + t.y - tH / 2) / 2},
-              ${t.x} ${t.y - tH / 2}`;
+    const sW = s.data && s.data.lord ? lordW : nodeW;
+    const tW = t.data && t.data.lord ? lordW : nodeW;
+    const sx = s.y + sW / 2;  // right edge of source
+    const sy = s.x;
+    const tx = t.y - tW / 2;  // left edge of target
+    const ty = t.x;
+    const midX = (sx + tx) / 2;
+    return `M ${sx} ${sy}
+            C ${midX} ${sy},
+              ${midX} ${ty},
+              ${tx} ${ty}`;
   }
 
   // Search functionality
