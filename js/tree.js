@@ -2,8 +2,10 @@
 
 const TreeViz = (() => {
   let svg, g, treemap, root, allMembers;
-  // Compact regular nodes: just a name pill
+  // HOF members
   const nodeW = 140, nodeH = 32;
+  // Non-HOF members (shorter but same width)
+  const smallW = 140, smallH = 26;
   // Lords stay large
   const lordW = 200, lordH = 96;
   const margin = { top: 40, right: 40, bottom: 40, left: 40 };
@@ -100,8 +102,9 @@ const TreeViz = (() => {
     );
   }
 
-  function getW(d) { return d.data.lord ? lordW : nodeW; }
-  function getH(d) { return d.data.lord ? lordH : nodeH; }
+  function isHof(d) { return d.data.years_attended && d.data.years_attended.length >= 5; }
+  function getW(d) { return d.data.lord ? lordW : (isHof(d) ? nodeW : smallW); }
+  function getH(d) { return d.data.lord ? lordH : (isHof(d) ? nodeH : smallH); }
 
   function update(source) {
     const duration = 400;
@@ -278,55 +281,84 @@ const TreeViz = (() => {
     // === REGULAR NODES (compact pill) ===
     const regulars = nodeEnter.filter(d => !d.data.lord);
 
-    regulars.append('rect')
-      .attr('class', 'node-rect')
-      .attr('x', -nodeW / 2)
-      .attr('y', -nodeH / 2)
-      .attr('width', nodeW)
-      .attr('height', nodeH)
-      .attr('rx', 16)
-      .attr('ry', 16);
-
-    // Name (left-aligned, clipped to available space)
     regulars.each(function(d) {
-      const txt = d3.select(this).append('text')
-        .attr('class', 'node-name')
-        .attr('x', -nodeW / 2 + 12)
-        .attr('y', 1)
-        .attr('text-anchor', 'start')
-        .attr('dominant-baseline', 'central')
-        .attr('font-size', '11px')
-        .text(d.data.name);
+      const hof = isHof(d);
+      const w = hof ? nodeW : smallW;
+      const h = hof ? nodeH : smallH;
+      const el = d3.select(this);
 
-      if (d.data.name.length > 14) {
-        txt.text(d.data.name.substring(0, 13) + '\u2026');
-      }
-    });
+      // Pill background
+      el.append('rect')
+        .attr('class', 'node-rect' + (hof ? ' hof' : ' non-hof'))
+        .attr('x', -w / 2)
+        .attr('y', -h / 2)
+        .attr('width', w)
+        .attr('height', h)
+        .attr('rx', h / 2)
+        .attr('ry', h / 2);
 
-    // Year info (right side of pill)
-    regulars.each(function(d) {
+      // Year info string (computed first so we know how much room the name has)
       const first = Math.min(...d.data.years_attended);
       const yearStr = `'${String(first % 100).padStart(2,'0')} (${d.data.years_attended.length}y)`;
 
-      d3.select(this).append('text')
-        .attr('x', nodeW / 2 - 10)
+      el.append('text')
+        .attr('x', w / 2 - 8)
         .attr('y', 1)
         .attr('text-anchor', 'end')
         .attr('dominant-baseline', 'central')
         .attr('fill', 'var(--text-muted)')
-        .attr('font-size', '9px')
+        .attr('font-size', hof ? '9px' : '8px')
         .text(yearStr);
+
+      // Name
+      el.append('text')
+        .attr('class', 'node-name')
+        .attr('x', -w / 2 + 10)
+        .attr('y', 1)
+        .attr('text-anchor', 'start')
+        .attr('dominant-baseline', 'central')
+        .attr('font-size', hof ? '11px' : '9px')
+        .attr('fill', hof ? 'var(--text-primary)' : 'var(--text-secondary)')
+        .text(d.data.name);
+
+      // HOF badge (bottom-right corner)
+      const yrs = d.data.years_attended.length;
+      if (yrs >= 5) {
+        const isNew = yrs === 5;
+        const label = isNew ? 'NEW HOF' : 'HOF';
+        const badgeW = isNew ? 46 : 28;
+        const badge = el.append('g')
+          .attr('transform', `translate(${w / 2 - badgeW / 2 + 2}, ${h / 2 - 1})`);
+
+        badge.append('rect')
+          .attr('x', -badgeW / 2)
+          .attr('y', -6)
+          .attr('width', badgeW)
+          .attr('height', 12)
+          .attr('rx', 6)
+          .attr('fill', isNew ? 'var(--green-mid)' : 'var(--gold)')
+          .attr('opacity', 0.9);
+
+        badge.append('text')
+          .attr('text-anchor', 'middle')
+          .attr('y', 3)
+          .attr('fill', 'var(--bg-primary)')
+          .attr('font-size', '7px')
+          .attr('font-weight', '800')
+          .attr('letter-spacing', '0.5px')
+          .text(label);
+      }
 
       // Win stars overlapping top-left corner
       if (d.data.wins > 0) {
         const starCount = Math.min(d.data.wins, 5);
         for (let i = 0; i < starCount; i++) {
-          d3.select(this).append('text')
-            .attr('x', -nodeW / 2 + 6 + i * 11)
-            .attr('y', -nodeH / 2 - 2)
+          el.append('text')
+            .attr('x', -w / 2 + 6 + i * 11)
+            .attr('y', -h / 2 - 2)
             .attr('text-anchor', 'middle')
             .attr('fill', 'var(--gold)')
-            .attr('font-size', '11px')
+            .attr('font-size', hof ? '11px' : '9px')
             .attr('stroke', 'var(--bg-primary)')
             .attr('stroke-width', 0.5)
             .text('\u2605');
@@ -341,7 +373,7 @@ const TreeViz = (() => {
           const w = getW(d);
           const toggle = d3.select(this).append('g')
             .attr('class', 'toggle-btn')
-            .attr('transform', `translate(${w / 2}, 0)`)
+            .attr('transform', `translate(${w / 2 + 14}, 0)`)
             .on('click', (event, d) => {
               event.stopPropagation();
               toggleNode(d);
@@ -389,9 +421,16 @@ const TreeViz = (() => {
     update(d);
   }
 
+  function nodeWidth(d) {
+    if (!d.data) return nodeW;
+    if (d.data.lord) return lordW;
+    if (d.data.years_attended && d.data.years_attended.length >= 5) return nodeW;
+    return smallW;
+  }
+
   function diagonal(s, t) {
-    const sW = s.data && s.data.lord ? lordW : nodeW;
-    const tW = t.data && t.data.lord ? lordW : nodeW;
+    const sW = nodeWidth(s);
+    const tW = nodeWidth(t);
     const sx = s.y + sW / 2;
     const sy = s.x;
     const tx = t.y - tW / 2;
