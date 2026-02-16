@@ -13,13 +13,19 @@
       <h1>CAC Tree</h1>
       <span class="subtitle">Golf Trip Hall of Fame</span>
     </div>
-    <div id="legend">
-      <span class="legend-item"><span style="color:#d4a843;">&#9733;</span> = win</span>
-      <span class="legend-item"><span style="color:#6a7290;">3y</span> = years attended</span>
-      <span class="legend-item">click node for details</span>
-    </div>
-    <div id="search-box">
-      <input type="text" id="search-input" placeholder="Search members...">
+    <div id="header-controls">
+      <div id="legend">
+        <span class="legend-item"><span style="color:#d4a843;">&#9733;</span> = win</span>
+        <span class="legend-item"><span style="color:#6a7290;">'19 (6y)</span> = started, total years</span>
+        <span class="legend-item">click node for details</span>
+      </div>
+      <div id="filters">
+        <label for="year-filter">Year:</label>
+        <select id="year-filter">
+          <option value="">All Years</option>
+        </select>
+        <input type="text" id="search-input" placeholder="Search members...">
+      </div>
     </div>
   </div>
 
@@ -85,12 +91,21 @@
         debounce = setTimeout(() => TreeViz.search(searchInput.value), 200);
       });
 
+      // Year filter
+      const yearFilter = document.getElementById('year-filter');
+      yearFilter.addEventListener('change', () => {
+        const year = yearFilter.value ? parseInt(yearFilter.value) : null;
+        TreeViz.filterByYear(year);
+      });
+
       // Close panel on Escape
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
           DetailPanel.close();
           searchInput.value = '';
+          yearFilter.value = '';
           TreeViz.search('');
+          TreeViz.filterByYear(null);
         }
       });
     });

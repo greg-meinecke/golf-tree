@@ -60,6 +60,12 @@ body {
   margin-left: 16px;
 }
 
+#header-controls {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
 #legend {
   display: flex;
   align-items: center;
@@ -69,6 +75,32 @@ body {
 .legend-item {
   font-size: 0.75rem;
   color: var(--text-muted);
+}
+
+#filters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#filters label {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+}
+
+#filters select {
+  background: var(--bg-primary);
+  border: 1px solid var(--node-border);
+  color: var(--text-primary);
+  padding: 6px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+  outline: none;
+  cursor: pointer;
+}
+
+#filters select:focus {
+  border-color: var(--green-mid);
 }
 
 #search-box {
@@ -362,15 +394,22 @@ body {
   font-size: 0.8rem;
 }
 
-/* ---------- Search highlight ---------- */
-.node-group.search-match .node-rect {
+/* ---------- Search & filter highlight ---------- */
+.node-group.search-match .node-rect,
+.node-group.year-match .node-rect {
   stroke: var(--green-light);
   stroke-width: 3px;
   filter: drop-shadow(0 0 10px rgba(109, 184, 90, 0.5));
 }
 
-.node-group.search-dimmed {
-  opacity: 0.25;
+.node-group.search-dimmed,
+.node-group.year-dimmed {
+  opacity: 0.2;
+}
+
+.node-group.year-match.lord .node-rect {
+  stroke: var(--gold-light);
+  filter: drop-shadow(0 0 12px var(--lord-glow));
 }
 
 /* ---------- Zoom controls ---------- */

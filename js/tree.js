@@ -38,6 +38,18 @@ const TreeViz = (() => {
       d._children = null;
     });
 
+    // Populate year filter dropdown
+    const allYears = new Set();
+    allMembers.forEach(m => m.years_attended.forEach(y => allYears.add(y)));
+    const sortedYears = [...allYears].sort();
+    const select = document.getElementById('year-filter');
+    sortedYears.forEach(y => {
+      const opt = document.createElement('option');
+      opt.value = y;
+      opt.textContent = y;
+      select.appendChild(opt);
+    });
+
     setupSVG();
     update(root);
     centerTree();
@@ -249,11 +261,19 @@ const TreeViz = (() => {
       .attr('class', 'node-years')
       .attr('x', 16).attr('y', 29)
       .attr('text-anchor', 'middle')
+      .attr('fill', 'var(--text-muted)')
       .text(d => {
-        const stars = d.data.wins > 0 ? ' ' + '\u2605'.repeat(Math.min(d.data.wins, 5)) : '';
-        return `${d.data.years_attended.length} yrs${stars}`;
-      })
-      .attr('fill', d => d.data.wins > 0 ? 'var(--gold)' : 'var(--text-muted)');
+        const first = Math.min(...d.data.years_attended);
+        return `'${String(first % 100).padStart(2,'0')} (${d.data.years_attended.length}y)`;
+      });
+
+    // Lord win stars on separate line
+    lords.filter(d => d.data.wins > 0).append('text')
+      .attr('x', 16).attr('y', 42)
+      .attr('text-anchor', 'middle')
+      .attr('fill', 'var(--gold)')
+      .attr('font-size', '11px')
+      .text(d => '\u2605'.repeat(Math.min(d.data.wins, 5)));
 
     // === REGULAR NODES (compact pill) ===
     const regulars = nodeEnter.filter(d => !d.data.lord);
@@ -278,38 +298,39 @@ const TreeViz = (() => {
         .attr('font-size', '11px')
         .text(d.data.name);
 
-      // Clip with SVG clipPath isn't worth it — just truncate long names
-      const maxChars = d.data.wins > 0 ? 12 : 14;
-      if (d.data.name.length > maxChars) {
-        txt.text(d.data.name.substring(0, maxChars - 1) + '\u2026');
+      if (d.data.name.length > 14) {
+        txt.text(d.data.name.substring(0, 13) + '\u2026');
       }
     });
 
-    // Small win trophy indicators (right side of pill)
+    // Year info (right side of pill)
     regulars.each(function(d) {
-      const wins = d.data.wins;
-      const years = d.data.years_attended.length;
+      const first = Math.min(...d.data.years_attended);
+      const yearStr = `'${String(first % 100).padStart(2,'0')} (${d.data.years_attended.length}y)`;
 
-      // Years dot
       d3.select(this).append('text')
-        .attr('x', nodeW / 2 - 12)
+        .attr('x', nodeW / 2 - 10)
         .attr('y', 1)
         .attr('text-anchor', 'end')
         .attr('dominant-baseline', 'central')
         .attr('fill', 'var(--text-muted)')
         .attr('font-size', '9px')
-        .text(`${years}y`);
+        .text(yearStr);
 
-      // Win stars
-      if (wins > 0) {
-        d3.select(this).append('text')
-          .attr('x', nodeW / 2 - 32)
-          .attr('y', 1)
-          .attr('text-anchor', 'end')
-          .attr('dominant-baseline', 'central')
-          .attr('fill', 'var(--gold)')
-          .attr('font-size', '9px')
-          .text('\u2605'.repeat(Math.min(wins, 5)));
+      // Win stars overlapping top-left corner
+      if (d.data.wins > 0) {
+        const starCount = Math.min(d.data.wins, 5);
+        for (let i = 0; i < starCount; i++) {
+          d3.select(this).append('text')
+            .attr('x', -nodeW / 2 + 6 + i * 11)
+            .attr('y', -nodeH / 2 - 2)
+            .attr('text-anchor', 'middle')
+            .attr('fill', 'var(--gold)')
+            .attr('font-size', '11px')
+            .attr('stroke', 'var(--bg-primary)')
+            .attr('stroke-width', 0.5)
+            .text('\u2605');
+        }
       }
     });
 
@@ -403,6 +424,22 @@ const TreeViz = (() => {
     });
   }
 
+  function filterByYear(year) {
+    const nodes = g.selectAll('.node-group');
+
+    if (!year) {
+      nodes.classed('year-match', false).classed('year-dimmed', false);
+      return;
+    }
+
+    nodes.each(function(d) {
+      const match = d.data.years_attended && d.data.years_attended.includes(year);
+      d3.select(this)
+        .classed('year-match', match)
+        .classed('year-dimmed', !match);
+    });
+  }
+
   function expandAll() {
     root.descendants().forEach(d => {
       if (d._children) {
@@ -413,5 +450,5 @@ const TreeViz = (() => {
     update(root);
   }
 
-  return { init, search, expandAll, centerTree };
+  return { init, search, filterByYear, expandAll, centerTree };
 })();
