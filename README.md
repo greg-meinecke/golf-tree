@@ -1,4 +1,4 @@
-# CAC Tree — Golf Trip Hall of Fame
+# Trip Tree — Golf Trip Hall of Fame
 
 Interactive tree visualization of the golf trip's member hierarchy.
 
